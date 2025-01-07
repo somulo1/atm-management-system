@@ -21,7 +21,8 @@ struct Record
     struct Date deposit;
     struct Date withdraw;
 };
-
+int isValidName(const char *name);
+int isValidDate(int day, int month, int year);
 struct User
 {
     int id;
