@@ -6,8 +6,8 @@ int getAccountFromFile(FILE *ptr, char name[50], struct Record *r)
 {
     return fscanf(ptr, "%d %d %s %d %d/%d/%d %s %d %lf %s",
                   &r->id,
-		  &r->userId,
-		  name,
+                  &r->userId,
+                  name,
                   &r->accountNbr,
                   &r->deposit.month,
                   &r->deposit.day,
@@ -95,6 +95,7 @@ invalid:
         goto invalid;
     }
 }
+
 int isValidAccountNumber(int accountNbr) {
     // Convert account number to string to check length
     char accountNbrStr[12]; // Buffer to hold account number as a string
@@ -114,6 +115,7 @@ int isValidAccountNumber(int accountNbr) {
 
     return 1; // Valid account number
 }
+
 int isValidName(const char *name) {
     if (strlen(name) == 0 || strlen(name) > 50) return 0;
     for (int i = 0; name[i] != '\0'; i++) {
@@ -148,6 +150,7 @@ int isValidDate(int day, int month, int year) {
     }
     return 1; // Valid date
 }
+
 void checkAllAccounts(struct User u) {
     char userName[100];
     struct Record r;
@@ -177,6 +180,7 @@ void checkAllAccounts(struct User u) {
     fclose(pf);
     success(u);
 }
+
 void createNewAcc(struct User u)
 {
     struct Record r;
@@ -187,17 +191,7 @@ void createNewAcc(struct User u)
 
     while (1) { // Loop until valid input is received
         system("clear");
-        printf("\t\t\t===== New record =====\n");
-
-        // Read name
-        printf("\nEnter your name:");
-        fgets(r.name, sizeof(r.name), stdin);
-        r.name[strcspn(r.name, "\n")] = '\0'; // Remove newline at the end of input
-        printf("Checking name: %s\n", r.name); // Debugging output
-        if (!isValidName(r.name)) {
-            printf("Invalid name. Please use only alphabetic characters and spaces.\n");
-            continue; // Prompt for name again
-        }
+        printf("\t\t\t===== New record(%s) =====\n", u.name);
 
         // Read date
         printf("\nEnter today's date (mm/dd/yyyy):");
@@ -206,28 +200,20 @@ void createNewAcc(struct User u)
             while(getchar() != '\n'); // clear the buffer
             continue;
         }
-        while (getchar() != '\n');  // Consume the leftover newline after scanf
-        printf("Checking date: %d/%d/%d\n", r.deposit.month, r.deposit.day, r.deposit.year); // Debugging output
-        if (!isValidDate(r.deposit.day, r.deposit.month, r.deposit.year)) {
-            printf("Invalid date. Please enter a valid date.\n");
-            continue; // Prompt for date again
-        }
 
         // Read account number
         printf("\nEnter the account number (9 digits):");
-        fgets(accountNbrStr, sizeof(accountNbrStr), stdin); // Use fgets to capture the full input
+        scanf("%s", accountNbrStr); // Use fgets to capture the full input
         accountNbrStr[strcspn(accountNbrStr, "\n")] = '\0'; // Remove newline
         r.accountNbr = atoi(accountNbrStr); // Convert string to integer
-        printf("Checking account number: %s\n", accountNbrStr); // Debugging output
 
+        // Validate account number
         if (!isValidAccountNumber(r.accountNbr)) {
-            printf("Invalid account number. Please enter a number with exactly 9 digits.\n");
             continue; // Prompt for account number again
         }
 
         // Check if account number already exists
         int accountExists = 0; // Flag to track if account exists
-        rewind(pf); // Reset file pointer to the beginning of the file
         while (getAccountFromFile(pf, userName, &cr)) {
             if (strcmp(userName, u.name) == 0 && cr.accountNbr == r.accountNbr) {
                 printf("✖ This Account already exists for this user\n\n");
@@ -242,9 +228,9 @@ void createNewAcc(struct User u)
 
         // Read country
         printf("\nEnter the country:");
-        fgets(r.country, sizeof(r.country), stdin);
+        scanf("%s", r.country);
         r.country[strcspn(r.country, "\n")] = '\0'; // Remove newline
-        printf("Entered country: %s\n", r.country); // Debugging output
+        
 
         // Read phone number
         printf("\nEnter the phone number:");
@@ -254,7 +240,6 @@ void createNewAcc(struct User u)
             continue; // Prompt for phone number again
         }
         while (getchar() != '\n');  // Consume the leftover newline after scanf
-        printf("Entered phone number: %d\n", r.phone); // Debugging output
         if (r.phone <= 0) {
             printf("Invalid phone number. Please enter a valid number.\n");
             continue; // Prompt for phone number again
@@ -272,13 +257,45 @@ void createNewAcc(struct User u)
             printf("Invalid amount. Please enter a positive number.\n");
             continue; // Prompt for amount again
         }
+        
+        // Set next available ID
+        int NextId = 0;
+        while (fscanf(pf,"%d %d %s %d %d/%d/%d %s %d %lf %s",
+        &r.id,
+        &u.id, 
+        r.name, 
+        &r.accountNbr, 
+        &r.deposit.month, 
+        &r.deposit.day, 
+        &r.deposit.year, 
+        r.country,
+        &r.phone, 
+        &r.amount,
+        r.accountType) !=EOF)
+        {
+            if (r.id >= NextId) 
+            {
+                NextId = r.id+1 ;
+            }
+        }
 
         // Account type selection
-        printf("\nChoose the type of account:\n\t1 -> saving\n\t2 -> current\n\t3 -> fixed01(for 1 year)\n\t4 -> fixed02(for 2 years)\n\t5 -> fixed03(for 3 years)\n\n\tEnter your choice:");
+        printf("\nChoose the type of account:\n\t-> saving\n\t-> current\n\t-> fixed01(for 1 year)\n\t-> fixed02(for 2 years)\n\t-> fixed03(for 3 years)\n\n\tEnter your choice:");
         fgets(r.accountType, sizeof(r.accountType), stdin);
         r.accountType[strcspn(r.accountType, "\n")] = '\0'; // Remove newline
 
+        // Save the new account to the file
         saveAccountToFile(pf, &u, &r);
+        fprintf(pf, "\n\n%d %d %s %d %d/%d/%d %s %d %.2lf %s",NextId,
+                                                                u.id, 
+                                                                u.name, 
+                                                                r.accountNbr, 
+                                                                r.deposit.month, r.deposit.day, r.deposit.year, 
+                                                                r.country, 
+                                                                r.phone, 
+                                                                r.amount,
+                                                                r.accountType  );
+
         fclose(pf);
         success(u);
         break; // Exit the loop after successful account creation
