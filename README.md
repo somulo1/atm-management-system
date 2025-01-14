@@ -19,7 +19,7 @@ This is an ATM platform developed in C. It allows the user to do the following a
 
 * To get the program use the following command to clone the repo:
 ```bash
-$  git clone https://learn.zone01kisumu.ke/git/somulo/atm-management-system.git
+$  git clone https://learn.zone01kisumu.ke/git/rotieno/atm-management-system.git
 ```
 
 * Navigate to the directory where you've cloned the repo:
@@ -63,7 +63,7 @@ This file is used by the `make` build automation tool to manage the build proces
 ## Author
 
 
-* **[samuel omulo](https://github.com/somulo1)**
+* **[Rabin Otieno](https://github.com/Rabinnnn)**
 
 ## License
 
