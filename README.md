@@ -4,8 +4,8 @@
 ## Description
 
 This is an ATM platform developed in C. It allows the user to do the following actions:
-*   Login/Register
-*   Create a new account
+*   sign in or sign up
+*   Create a new bank account
 *   Check the details of an existing account they own
 *   Check all accounts they own
 *   Update information of existing accounts
